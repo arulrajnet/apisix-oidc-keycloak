@@ -1,0 +1,72 @@
+:toc: left
+:figure-caption!:
+
+[[apisix-oidc-with-keycloak]]
+= APISIX OIDC + Keycloak + whoami
+
+This example repo describe how to access whoami/any service securely via APISIX OIDC with keycloak.
+
+
+== Prerequisites
+
+* Docker 24.0.6 or latest
+* Docker compose v2.22.0 or latest
+
+== How to use
+
+* Map `foo.example.com` and `bar.example.com` against `127.0.0.1` in `/etc/hosts` file
+* Then `docker-compose up -d`
+* Then visit http://foo.example.com/whoami/
+* Login using username: `foo@example.com` password: `welcome123`
+* Now the whoami page will load
+* To logout http://foo.example.com/auth/realms/master/protocol/openid-connect/logout then http://foo.example.com/whoami/logout
+
+== Explanation
+
+TBD
+
+=== Architecture
+
+* Keycloak 22.0.3
+* APISIX 3.6.0
+* keycloak-config-cli 5.8.0-22.0.0
+* Postgres 15.4
+
+=== Keycloak
+
+Keycloak is an OpenID Connect Identity Provider (OIDC IDP).
+
+=== Keycloak config init
+
+Load the keycloak config into the keycloak using their API. We used this only to create realm, clients and users.
+
+=== APISIX
+
+APISIX is an advance reverse proxy.
+
+=== APISIX init
+
+This is just a shell script with curl command against APISIX admin API.
+
+This will create
+
+* Service
+* Routes
+* Plugins
+
+=== Whoami
+
+This is mock app. We used this as protected endpoints.
+
+== TODO
+
+* Overlaping routes introduce issue in Discovery.
+* Fix Logout URI
+
+*Author*
+
+[valign=center, halign=center, frame=all, grid=all, stripes=none, options=autowidth,footer]
+|===
+a|image::https://avatars0.githubusercontent.com/u/834529?s=86[alt="Follow @arulrajnet on Twitter", align="center", link="https://twitter.com/arulrajnet", window=_blank]
+|link:https://twitter.com/arulrajnet[@arulrajnet, title="Follow @arulrajnet on Twitter", window=_blank]
+|===

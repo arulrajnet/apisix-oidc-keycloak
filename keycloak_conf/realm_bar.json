@@ -1,0 +1,118 @@
+{
+  "id": "bar",
+  "realm": "bar",
+  "sslRequired": "none",
+  "loginTheme": "bar",
+  "accountTheme": "keycloak.v2",
+  "adminTheme": "keycloak.v2",
+  "emailTheme": "keycloak",
+  "enabled": true,
+  "clients": [
+    {
+      "clientId": "bar",
+      "name": "",
+      "description": "",
+      "rootUrl": "$(env:PORTAL_PROTOCOL:-https)://bar.$(env:BASE_FQDN)/",
+      "adminUrl": "",
+      "baseUrl": "$(env:PORTAL_PROTOCOL:-https)://bar.$(env:BASE_FQDN)/",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "$(env:BAR_CLIENT_SECRET)",
+      "redirectUris": [
+        "$(env:PORTAL_PROTOCOL:-https)://bar.$(env:BASE_FQDN)/oauth2/callback",
+        "$(env:PORTAL_PROTOCOL:-https)://bar.$(env:BASE_FQDN)/*"
+      ],
+      "webOrigins": [
+        "$(env:PORTAL_PROTOCOL:-https)://bar.$(env:BASE_FQDN)"
+      ],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "publicClient": false,
+      "frontchannelLogout": true,
+      "protocol": "openid-connect",
+      "attributes": {
+        "oauth2.device.authorization.grant.enabled": "false",
+        "backchannel.logout.revoke.offline.tokens": "false",
+        "use.refresh.tokens": "true",
+        "oidc.ciba.grant.enabled": "false",
+        "backchannel.logout.session.required": "true",
+        "client_credentials.use_refresh_token": "false",
+        "acr.loa.map": "{}",
+        "require.pushed.authorization.requests": "false",
+        "tls.client.certificate.bound.access.tokens": "false",
+        "display.on.consent.screen": "false",
+        "token.response.type.bearer.lower-case": "false",
+        "post.logout.redirect.uris": "$(env:PORTAL_PROTOCOL:-https)://bar.$(env:BASE_FQDN)/*"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "nodeReRegistrationTimeout": -1,
+      "defaultClientScopes": [
+        "acr",
+        "profile",
+        "email",
+        "audience"
+      ],
+      "optionalClientScopes": [
+        "web-origins",
+        "address",
+        "phone",
+        "offline_access",
+        "roles",
+        "microprofile-jwt"
+      ]
+    }
+  ],
+  "clientScopes": [
+    {
+      "name": "audience",
+      "description": "",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "gui.order": "",
+        "consent.screen.text": ""
+      },
+      "protocolMappers": [
+        {
+          "name": "audience-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "bar",
+            "id.token.claim": "true",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users" : [ {
+    "username" : "bar@example.com",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : true,
+    "firstName" : "Bar",
+    "lastName" : "Demo",
+    "email" : "bar@example.com",
+    "credentials" : [ {
+      "type" : "password",
+      "userLabel": "initial",
+      "value": "$(env:USER_INITIAL_PASSWORD)"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ],
+  "keycloakVersion": "22.0.0"
+}

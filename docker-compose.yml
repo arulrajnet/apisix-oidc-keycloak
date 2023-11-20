@@ -1,0 +1,183 @@
+version: '3.9'
+
+x-default: &default
+  restart: on-failure
+  dns:
+    - 1.1.1.1
+    - 1.0.0.1
+
+x-pgenv: &pgenv
+  &pgUser POSTGRES_USER: ${DB_USER}
+  &pgPassword POSTGRES_PASSWORD: ${DB_PASSWORD}
+  &pgDBName POSTGRES_DB: ${DB_NAME}
+  &pgData PGDATA: /data/postgres
+
+x-creds:
+  - &apisixAdminKey ${APISIX_ADMIN_KEY}
+  - &apisixViewerKey ${APISIX_VIEWER_KEY}
+  - &barClientSecret ${BAR_CLIENT_SECRET}
+  - &fooClientSecret ${FOO_CLIENT_SECRET}
+
+x-apisixenv: &apisixenv
+  ADMIN_KEY: *apisixAdminKey
+  VIEWER_KEY: *apisixViewerKey
+  BAR_CLIENT_SECRET: *barClientSecret
+  BASE_FQDN: ${BASE_FQDN}
+  FOO_CLIENT_SECRET: *fooClientSecret
+
+#  This is for new quarkus based
+x-keycloakQuarkusEnv: &keycloakQuarkusEnv
+  KC_DB: postgres
+  KC_DB_USERNAME: ${DB_USER}
+  KC_DB_PASSWORD: ${DB_PASSWORD}
+  KC_DB_SCHEMA: public
+  KC_DB_URL: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+  KC_DB_URL_DATABASE: ${DB_NAME}
+  KC_DB_URL_HOST: ${DB_HOST}
+  KC_DB_URL_PORT: ${DB_PORT}
+  KC_HOSTNAME_STRICT: "false"
+  KC_HOSTNAME_PATH: /auth
+  # KC_HOSTNAME_ADMIN_URL: http://${DEBUG_FQDN}:32080/auth/
+  KC_HTTP_RELATIVE_PATH: /auth
+  KC_FEATURES:
+    authorization
+    client-policies
+    docker
+    dynamic-scopes
+    impersonation
+    map-storage
+    scripts
+    token-exchange
+    upload-scripts
+    web-authn
+  KC_HTTP_ENABLED: "true"
+  KC_HTTP_PORT: 8080
+  KC_METRICS_ENABLED: "true"
+  KC_HEALTH_ENABLED: "true"
+  KC_PROXY: edge
+  KEYCLOAK_ADMIN: admin
+  KEYCLOAK_ADMIN_PASSWORD: admin
+
+volumes:
+  apisix_log:
+  etcd_data:
+  pg_data:
+
+services:
+
+  whoami:
+    <<: *default
+    image: traefik/whoami:${TRAEFIK_WHOAMI_VERSION}
+    ports:
+      - 80
+
+  apisix:
+    <<: *default
+    image: apache/apisix:${APISIX_VERSION}
+    restart: on-failure
+    volumes:
+      - apisix_log:/usr/local/apisix/logs
+      - ${PWD}/apisix_conf/config.yaml:/usr/local/apisix/conf/config.yaml
+    depends_on:
+      etcd:
+        condition: service_started
+    ports:
+      # Admin
+      - 9180
+      # Web - Proxy
+      - 80:80
+      # Metrics
+      - 9091
+      # Control
+      - 9092
+    environment:
+      *apisixenv
+    networks:
+      default:
+        aliases:
+          - bar.${BASE_FQDN}
+          - foo.${BASE_FQDN}
+
+  apisix-init:
+    <<: *default
+    image: curlimages/curl:${CURL_VERSION}
+    user: root
+    volumes:
+      - ${PWD}/apisix_conf/apisix-config-init.sh:/apisix-config-init.sh
+    depends_on:
+      apisix:
+        condition: service_started
+    entrypoint: /bin/sh -c "apk add --no-cache jq && /apisix-config-init.sh"
+    restart: on-failure
+    environment:
+      APISIX_SERVICE_ADMIN_SECRET: *apisixAdminKey
+      BAR_CLIENT_SECRET: *barClientSecret
+      BASE_FQDN: ${BASE_FQDN}
+      FOO_CLIENT_SECRET: *fooClientSecret
+
+  etcd:
+    <<: *default
+    image: bitnami/etcd:${ETCD_VERSION}
+    restart: on-failure
+    volumes:
+      - etcd_data:/bitnami/etcd
+    environment:
+      ETCD_ENABLE_V2: "true"
+      ALLOW_NONE_AUTHENTICATION: "yes"
+      ETCD_ADVERTISE_CLIENT_URLS: "http://etcd:2379"
+      ETCD_LISTEN_CLIENT_URLS: "http://0.0.0.0:2379"
+    ports:
+      - 2379
+
+  pgsql:
+    <<: *default
+    image: postgres:${POSTGRES_VERSION}
+    ports:
+      - 5432
+    environment:
+      *pgenv
+    volumes:
+      - pg_data:/data/postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-U", "postgres"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 1m
+
+  keycloak:
+    <<: *default
+    image: quay.io/keycloak/keycloak:${KC_VERSION}
+    depends_on:
+      pgsql:
+        condition: service_healthy
+    ports:
+      - 32080:8080
+      # admin console
+      - 32090:9990
+    environment:
+      *keycloakQuarkusEnv
+    entrypoint: /opt/keycloak/bin/kc.sh start-dev
+
+  keycloak-config-init:
+    <<: *default
+    image: adorsys/keycloak-config-cli:${KC_CONFIG_LOADER_VERSION}
+    depends_on:
+      pgsql:
+        condition: service_started
+    volumes:
+      - ${PWD}/keycloak_conf:/config
+    environment:
+      KEYCLOAK_URL: http://keycloak:8080/auth/
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: admin
+      KEYCLOAK_AVAILABILITYCHECK_ENABLED: true
+      KEYCLOAK_AVAILABILITYCHECK_TIMEOUT: 120s
+      IMPORT_FILES_LOCATIONS: '/config/*'
+      IMPORT_VARSUBSTITUTION_ENABLED: true
+      # Env's for the config files
+      BAR_CLIENT_SECRET: *barClientSecret
+      BASE_FQDN: ${BASE_FQDN}
+      FOO_CLIENT_SECRET: *fooClientSecret
+      PORTAL_PROTOCOL: ${PORTAL_PROTOCOL}
+      USER_INITIAL_PASSWORD: ${USER_INITIAL_PASSWORD}
