@@ -61,7 +61,6 @@ This is mock app. We used this as protected endpoints.
 == TODO
 
 * Overlaping routes introduce issue in Discovery.
-* Fix Logout URI
 
 *Author*
 

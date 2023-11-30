@@ -85,7 +85,8 @@ curl $CURL_OPTS -X PUT -H "X-API-KEY: ${APISIX_SERVICE_ADMIN_SECRET}" http://${A
             \"realm\": \"foo\",
             \"introspection_endpoint_auth_method\": \"client_secret_post\",
             \"redirect_uri\": \"http://foo.${BASE_FQDN}/\",
-            \"logout_path\": \"/logout\"
+            \"logout_path\": \"/whoami/logout\",
+            \"post_logout_redirect_uri\": \"http://foo.${BASE_FQDN}/whoami/\"
         }
     }
 }"
@@ -107,7 +108,8 @@ curl $CURL_OPTS -X PUT -H "X-API-KEY: ${APISIX_SERVICE_ADMIN_SECRET}" http://${A
             \"realm\": \"bar\",
             \"introspection_endpoint_auth_method\": \"client_secret_post\",
             \"redirect_uri\": \"http://bar.${BASE_FQDN}/\",
-            \"logout_path\": \"/logout\"
+            \"logout_path\": \"/whoami/logout\",
+            \"post_logout_redirect_uri\": \"http://foo.${BASE_FQDN}/whoami/\"
         }
     }
 }"
