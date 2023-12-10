@@ -16,10 +16,11 @@ This example repo describe how to access whoami/any service securely via APISIX 
 
 * Map `foo.example.com` and `bar.example.com` against `127.0.0.1` in `/etc/hosts` file
 * Then `docker-compose up -d`
-* Then visit http://foo.example.com/whoami/
+* Then visit http://foo.example.com/
 * Login using username: `foo@example.com` password: `welcome123`
 * Now the whoami page will load
-* To logout http://foo.example.com/auth/realms/master/protocol/openid-connect/logout then http://foo.example.com/whoami/logout
+* Goto http://bar.example.com/ . It will redirect to keycloak login page
+* To logout from foo http://foo.example.com/logout
 
 == Explanation
 
