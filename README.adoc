@@ -58,10 +58,6 @@ This will create
 
 This is mock app. We used this as protected endpoints.
 
-== TODO
-
-* Overlaping routes introduce issue in Discovery.
-
 *Author*
 
 [valign=center, halign=center, frame=all, grid=all, stripes=none, options=autowidth,footer]

@@ -114,6 +114,7 @@ services:
       BAR_CLIENT_SECRET: *barClientSecret
       BASE_FQDN: ${BASE_FQDN}
       FOO_CLIENT_SECRET: *fooClientSecret
+      SESSION_SECRET: ${SESSION_SECRET}
 
   etcd:
     <<: *default
