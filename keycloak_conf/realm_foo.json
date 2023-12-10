@@ -21,8 +21,7 @@
       "clientAuthenticatorType": "client-secret",
       "secret": "$(env:FOO_CLIENT_SECRET)",
       "redirectUris": [
-        "$(env:PORTAL_PROTOCOL:-https)://foo.$(env:BASE_FQDN)/oauth2/callback",
-        "$(env:PORTAL_PROTOCOL:-https)://foo.$(env:BASE_FQDN)/*"
+        "$(env:PORTAL_PROTOCOL:-https)://foo.$(env:BASE_FQDN)/callback"
       ],
       "webOrigins": [
         "$(env:PORTAL_PROTOCOL:-https)://foo.$(env:BASE_FQDN)"
